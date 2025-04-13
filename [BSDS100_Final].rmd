@@ -1,0 +1,277 @@
+---
+title: "Final Project"
+author: Ellie Carpenter, Sarina Barot-Martinez, Mihir Harshe, Rubeno Dechua, Hans
+  Clough
+date: '2022-12-06'
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r loading ggplot}
+install.packages('ggpubr', repos = "http://cran.us.r-project.org")
+install.packages('ggplot', repos = "http://cran.us.r-project.org")
+install.packages('tidyverse', repos = "http://cran.us.r-project.org")
+
+library(tidyverse)
+
+library(ggplot2)
+
+library(ggpubr)
+
+```
+
+```{r installing packages}
+install.packages('Rtools', repos = "https://cran.rstudio.com/bin/windows/Rtools/")
+install.packages("ggplot2", repos = "http://cran.rstudio.org")
+library(ggplot2)
+```
+
+```{r loading the transit data}
+SFtransit <- read.csv("/Users/rubenodehcua/Desktop/BSDS/Muni_Simple_Routes.csv")
+str(SFtransit)
+SFMuni.stops <- read.csv("/Users/rubenodehcua/Desktop/BSDS/Muni_Stops.csv")
+str(SFMuni.stops)
+freq <- read.csv("/Users/rubenodehcua/Desktop/BSDS/Bus_Frequency - Sheet1.csv")
+
+str(freq)
+```
+
+```{r     cleaning transit data}
+SFMuni.stops$POSITION <- as.factor(SFMuni.stops$POSITION)
+SFMuni.stops$ORIENTATION <- as.factor((SFMuni.stops$ORIENTATION))
+SFMuni.stops$SHELTER <- as.logical(SFMuni.stops$SHELTER)
+str(SFMuni.stops)
+```
+
+```{r}
+#scaled.LATITUDE <- SFMuni.stops$LATITUDE * 120
+Sl <- ggplot(SFMuni.stops, aes(LONGITUDE, LATITUDE))
+
+Sl + geom_point(size = 0.5, aes(color = SHELTER)) + theme(aspect.ratio=3/3, element_blank())
+
+#Sl + geom_point(data = SFMuni.stops %>% filter(SHELTER == T), size = .7, aes(color = ORIENTATION, shape = SHELTER)) + theme(aspect.ratio=3/3) 
+#SFMuni.stops$SHELTER
+
+#Sl + geom_point(size = 1, aes(color = Analysis.Neighborhoods, shape = ORIENTATION)) + theme(aspect.ratio=3/3) 
+
+```
+
+```{r}
+sl <- ggplot(SFMuni.stops, aes(x=LONGITUDE))
+#sl + geom_histogram(aes(fill = SHELTER), bins = 50)
+
+sl1 <- ggplot(SFMuni.stops, aes(y=LATITUDE))
+#pl1 <- sl1 + geom_histogram(aes(fill = SHELTER, alpha = .1), bins = 70)
+#pl1
+
+#sl2 <- ggplot(SFMuni.stops, aes(y=LATITUDE))
+#pl2 <- sl2 +geom_histogram(aes(fill = SHELTER, alpha = .1), bins = 40) 
+
+
+
+sl1 + geom_histogram(aes(fill = SHELTER), bins = 70) + theme(element_blank()) #change bins back to 70 # + geom_histogram(aes(fill = SHELTER, alpha = .1), bins = 30) + geom_histogram(aes(fill = SHELTER, alpha = .1), bins = 10) + geom_histogram(aes(fill = SHELTER, alpha = .1), bins = 5)
+```
+
+
+```{r}
+
+#IDKplot <- ggplot(SFMuni.stops, x = ORIENTATION, y = POSITION)
+#IDKplot + geom_curve()
+
+for(y in 1:ncol(SFMuni.stops)){
+  if (is.na(SFMuni.stops[1,y])) SFMuni.stops[1,y] = 0
+}
+
+plot(SFMuni.stops$OBJECTID, SFMuni.stops$LATITUDE)
+
+```
+
+```{r lets see if we can objectively measure density}
+#for (i in 1:nrow(SFMuni.stops)){
+#  for (j in 1:nrow(SFMuni.stops)){
+#    if (i == j){
+#      cat("skipping", i, "and", j, "\n")
+#    }else{
+      #l1 = SFMuni.stops$LONGITUDE[i]
+      #l2 = SFMuni.stops$LONGITUDE[j]
+      #a1 = SFMuni.stops$LATITUDE[i]
+      #a2 = SFMuni.stops$LATITUDE[j]
+#      d1 = min()
+      #cat("we have a longitude of", l1, "and", l2, "\n")
+      #cat("we have a latitude of", a1, "and", a2, "\n")
+#    }
+    
+#  }
+#}
+```
+
+```{r}
+#install.packages("sf")
+#install.packages("leaflet")
+library(dplyr)
+library(sf)
+library(leaflet)
+#SFtransit$mapShape <- st_as_sfc(SFtransit$shape) # doesn't work for some reason
+#plot34 <- ggplot(SFtransit, x = mapShape, y = shape) + geom_line(aes(x=mapShape,y=shape))
+#plot34
+
+
+str(SFtransit)
+#SFtransit$shape
+
+
+
+l1shape <- as.numeric(SFtransit$shape[1])
+l1shape
+
+
+```
+
+```{r}
+SFtransit$shape <- gsub("MULTILINESTRING \\(\\(", "", SFtransit$shape)
+SFtransit$shape <- gsub("\\)\\)", "", SFtransit$shape)
+
+mapshape <- SFtransit$shape
+longlang <- list()
+lists <- list()
+for(x in 1:length(mapshape[])){
+  
+  longlang <- strsplit(mapshape[x], " ,")
+  longlang <- strsplit(mapshape[x], " +")
+  sfshape <- longlang[[1]]
+  sfshape <- gsub(",", "", sfshape)
+  as.numeric(sfshape)
+  
+  x <- list()
+  y <- list()
+  for(i in 1:length(sfshape)){
+    if(i%%2!=0){
+      x <- append(x, sfshape[i])
+    }else{
+      y <- append(y, sfshape[i])
+    }
+  }
+  xs <- vector()
+  ys <- vector()
+  for(i in 1:length(x[])){
+    xs[i] <- x[[i]]
+    ys[i] <- y[[i]]
+  }
+  df <- data.frame()
+  df <-data.frame(x=c(xs),
+                   y=c(ys))
+  lists[[length(lists)+1]] <- df
+
+}
+```
+
+
+```{r}
+
+#for (i in 1:length(lists)){
+#  lists[[i]] <- as.numeric(lists[[i]])
+#}
+
+
+######################
+
+#lists[[1]]$x
+
+#str(lists)
+
+
+mySPECIALdf <- as.data.frame(lists[[1]])
+mySPECIALdf$x <- as.numeric(mySPECIALdf$x)
+mySPECIALdf$y <- as.numeric(mySPECIALdf$y)
+#str(mySPECIALdf)
+
+for (i in 1:length(lists)){
+  #print(i)
+  lists[[i]]$x <- as.numeric(lists[[i]]$x)
+  lists[[i]]$y <- as.numeric(lists[[i]]$y)
+}
+
+str(lists)
+
+```
+
+```{r}
+
+max(SFMuni.stops$LATITUDE)
+min(SFMuni.stops$LATITUDE)
+max(SFMuni.stops$LONGITUDE)
+min(SFMuni.stops$LONGITUDE)
+
+first <- as.data.frame(lists[[2]])
+pl <- ggplot(first, aes(x,y))
+pl1 <- pl + geom_path(size = .3) + xlim(-122.5108,-122.3656) + ylim(37.70576,37.82985) + theme(aspect.ratio = 1/1)
+pl1 + geom_point(data = SFMuni.stops, size = 0.5, aes(LONGITUDE, LATITUDE, color = SHELTER)) + theme(aspect.ratio=3/3, element_blank())
+
+lists[[23]]
+
+```
+
+```{r}
+
+type <- c(as.factor(SFtransit$SERVICE_CA))
+for (i in 1:length(SFtransit)){
+}
+str(type)
+?append
+lists1 <- cbind(lists[[1]], type)
+
+```
+
+```{r}
+#first <- as.data.frame(lists[[2]])
+Sl <- ggplot(SFMuni.stops, aes(LONGITUDE, LATITUDE))
+psl <- sl + geom_point(size = 0.45, aes(LONGITUDE, LATITUDE, color = SHELTER)) + theme(aspect.ratio=3/3, element_blank())
+#psl
+#psl + geom_path(data = lists[[2]], size = 0.3, aes(x,y)) + theme(aspect.ratio=3/3, element_blank())
+
+```
+
+
+```{r}
+#str(lists)
+for (i in 1:length(lists)){
+  newRoute = paste("geom_path(data = lists[[",i,"]], size = 0.3, aes(x,y, size = 12))", sep = "")
+  psl <- psl + eval(parse(text = newRoute))
+  
+  #print(newRoute)
+}
+psl
+?leaflet
+?sf
+```
+
+**Components	of	the	write-up	and	presentation**
+
+*Statement	of	question/topic	that	you	want	to answer	and	what	motivated	you	to	study	the	question/topic*
+
+  The topic we studied was public transit in San Francisco. Specifically, we were interested in how  the population density in the city relates to the MUNI routes. We all ride MUNI almost every day and were excited to learn more about the system and think through how potential improvements could be made.
+
+*If	applicable,	what	data	will	you	analyze?	Identify	at	least	one	data	source (can	be	from	Kaggle,	etc.)*
+
+  We used two data sets. We downloaded both from sf.gov as `.csv` files. The first, "MUNI Stops", lists all 3428 MUNI bus stops in the city, including their cross sections, stop ID numbers, and latitudinal and longitudinal information. The second, "MUNI Routes" lists all of the bus lines and their information regarding their direction and frequency. 
+
+*What	challenges	do	you	face	in	analyzing	this	data?*
+
+  There were many challenges we faced in this process. First, it was very difficult to figure out how to get the data to a place where it could be plotted. We wanted to be able to plot the actual bus routes by graphing each stop onto a map of the city. The latitude/longitude data regarding each stop was not in a format that this was possible, so we had to first figure out how to list it in an accessible way. 
+  Second, despite our best efforts, we could not find a data set with information regarding the population density within the city. Our solution to this was to use a photo of a map of the city with the density information represented by different colors. We used this image to overlay our routes onto. This solution had its own problems associated with it, including scaling our map of the stops to the scale of the map used online since we did not have the ability to manipulate that map.
+
+*What	packages	were	needed	for	this	case	study?*
+
+1) `dpylr`: Is used to organize data and make manipulation easier, allows one to call row/column data easily
+2) `sf`: Is used to plot spatial data, experimented with this method to plot routes using polygon geometry
+3) `leaflet`: Creates a map widget using the leaflet package, easily renders spatial objects from the sp or sf packages, or 
+data frames with latitude/longitude columns
+4) `ggplot`: Can be used to declare the input data frame for a graphic and to specify the set of plot aesthetics intended to be common throughout all layers
+5) `ggpubr`: Simpler version of ggplot, creates plots with less code 
+
+*Discussion:	What	did	you	learn	from	this	experience?	What	more	could	you	do	with	this	project	in	the	future?*
+
+  One of the biggest lessons we learned is that data cleaning and organizing can be the most time consuming part of analysis projects. Although it took us a while to find the data we wanted to work with, develop questions to explore, and eventually to discuss the results, the most challenging part for us was to get the data into a format that we could work with. Part of the reason this was so time consuming was because of how important it was for us to set the data aside and come back to it multiple times with fresh(ish) eys. 
+  On that note, another key part of our project was the teamwork. It took all of us sharing ideas, explaining our problems, and working together to get the assignment done. We were all happy to work in a collaborative and patient team and now have a much better understanding as to the value of teams in data analysis.
+  Finally, there was so much more we wanted to do with this data if we had more time and more data to work with. Our ideas for additional analyses included examining the frequency information in relation to which stops had shelters and which did not, and looking at where car crashes occur most frequently in order to provide recommendations for better traffic signals and alternative MUNI routes. These analyses along with the analyses we completed in this project could be used to recommend changes to the frequency of bus routes, or even to provide recommendations for how to expand the underground transit options in the city.
